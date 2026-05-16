@@ -35,8 +35,7 @@ const StatRadar = React.memo(function StatRadar({ stats }) {
 
   return (
     <div className="w-64 h-64">
-      <ResponsiveContainer width="100%" height="100%">
-        <RadarChart data={data}>
+        <RadarChart width={320} height={320} data={data}>
           <PolarGrid stroke="#2a2f3a" strokeOpacity={0.6} />
 
           <PolarAngleAxis
@@ -87,7 +86,6 @@ const StatRadar = React.memo(function StatRadar({ stats }) {
             animationEasing="ease-out"
           />
         </RadarChart>
-      </ResponsiveContainer>
     </div>
   );
 });

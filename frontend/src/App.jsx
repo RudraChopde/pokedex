@@ -1,6 +1,8 @@
 import { useState, useRef } from "react";
 import Header from "./components/layout/Header";
 import ContentWrapper from "./components/layout/ContentWrapper";
+import Evolution from "./components/Evolutions";
+import { LoaderPinwheel } from "lucide-react";
 
 function App() {
   const [mode, setMode] = useState("home");
@@ -16,29 +18,21 @@ function App() {
     if (timeoutRef.current) {
     clearTimeout(timeoutRef.current);
     }
+
+    setMode("loading");
     setSearchQuery(query);
-
-    setTimeout(() => {
-      setMode("loading");
-
-      const holdDuration = 3000 + Math.random() * 2000;
-
-      setTimeout(() => {
-        setMode("pokemon");
-      }, holdDuration);
-
-    }, 2000); // <-- tiny pause before slide
 };
 
 
   return (
-    <div className="min-h-screen overflow-hidden bg-[#0f1117] text-white flex items-center justify-center">
+    <div className="min-h-screen overflow-y-auto bg-[#0f1117] text-white flex justify-center py-10">
       <div className="w-full max-w-6xl px-6">
         <Header onSearch={handleSearch} />
         <ContentWrapper
           mode={mode}
           searchQuery={searchQuery}
           onBack={handleBack}
+          onSearchComplete={() => setMode("pokemon")}
         />
       </div>
     </div>

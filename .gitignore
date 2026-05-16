@@ -4,3 +4,4 @@ backend/_pycache_/
 _pycache_/
 .env
 dist/
+*.pyc

@@ -1,16 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import StatRadar from "../pokemon/stats";
 import TypeChip from "../ui/types";
+import Evolution from "../Evolutions";
 
-function ContentWrapper({ mode, searchQuery, onBack }) {
+function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete }) {
   const [form, setForm] = useState("Base");
   const [isMega, setIsMega] = useState(false);
   const [pokemonData, setPokemonData] = useState(null);
   const [typedText, setTypedText] = useState("");
+  const audioRef = useRef(null);
+  const [isShiny, setIsShiny] = useState(false);
 
-  // 🔥 FETCH
+  // FETCH
   useEffect(() => {
-    if (!searchQuery || mode !== "pokemon") return;
+    if (!searchQuery) return;
 
     setPokemonData(null);
 
@@ -21,11 +24,12 @@ function ContentWrapper({ mode, searchQuery, onBack }) {
       })
       .then((data) => {
         setPokemonData(data);
+          onSearchComplete?.();
       })
-      .catch((err) => console.error(err));
-  }, [searchQuery, mode]);
+          .catch((err) => console.error(err));
+  }, [searchQuery]);
 
-  // 🔥 TYPEWRITER (FINAL FIX — NO undefined EVER)
+  // TYPEWRITER 
   useEffect(() => {
     if (!pokemonData?.description) return;
 
@@ -58,43 +62,65 @@ function ContentWrapper({ mode, searchQuery, onBack }) {
     ? Object.values(pokemonData.stats).reduce((sum, stat) => sum + stat, 0)
     : 0;
 
-  return (
-    <div className="relative h-[520px] overflow-hidden rounded-3xl bg-gradient-to-br from-[#141822] to-[#0f1117] border border-[#2a2f3a] shadow-[0_0_80px_rgba(255,106,0,0.08)]">
-      
-      <div
-        className="flex h-full transition-transform duration-[1800ms] ease-[cubic-bezier(0.25,0.8,0.25,1)]"
-        style={{
-          transform: mode === "pokemon" ? "translateX(-100%)" : "translateX(0%)",
-        }}
-      >
+  const playCry = () => {
 
-        {/* LEFT PANEL */}
-        <div className="relative w-full h-full flex-shrink-0 flex items-center justify-center">
+    console.log(pokemonData.cry);
+    if (!pokemonData?.cry) return;
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+
+    audioRef.current = new Audio(pokemonData.cry);
+    audioRef.current.volume = 0.4;
+
+    audioRef.current.play().catch(err => {
+      console.error("Audio failed:", err);
+      });
+  };
+
+  return (
+    //<div className='relative ${mode === "pokemon" ? "min-h-[780px]" : "h-[520px]"} overflow-visible rounded-3xl bg-gradient-to-br from-[#141822] to-[#0f1117] border border-[#2a2f3a] shadow-[0_0_80px_rgba(255,106,0,0.08)]'>
+      <div className={`relative ${
+        mode === "pokemon"
+        ? "min-h-[780px]"
+        : "h-[520px]"
+        } overflow-visible rounded-3xl bg-gradient-to-br from-[#141822] to-[#0f1117] border border-[#2a2f3a] shadow-[0_0_80px_rgba(255,106,0,0.08)]`}>
+
+        {mode !== "pokemon" ? (
+        <div className="min-h-[520px] flex items-center justify-center">
+
           {mode === "home" && (
-            <div className="flex flex-col items-center gap-6">
-              <h1 className="text-white text-3xl font-semibold tracking-wide">
-                <span className="text-orange-500">ROTOM</span> DEX
-              </h1>
-              <p className="text-white text-xl tracking-widest">READY</p>
-            </div>
+          <div className="flex flex-col items-center gap-6">
+            <h1 className="text-white text-3xl font-semibold tracking-wide">
+            <span className="text-orange-500">ROTOM</span> DEX
+            </h1>
+
+            <p className="text-white text-xl tracking-widest">
+              READY
+            </p>
+          </div>
           )}
 
           {mode === "loading" && (
-            <div className="flex flex-col items-center gap-4 animate-pulse">
-              <div className="w-12 h-12 border-2 border-white/30 border-t-orange-500 rounded-full animate-spin"></div>
+          <div className="flex flex-col items-center gap-4 animate-pulse">
+            <div className="w-12 h-12 border-2 border-white/30 border-t-orange-500 rounded-full animate-spin"></div>
+
               <p className="text-white text-lg tracking-wide">
                 Analyzing Data...
               </p>
-            </div>
+          </div>
           )}
+
         </div>
+        ) : (
+        <>
+        
 
         {/* RIGHT PANEL */}
-        <div className={`relative w-full h-full flex-shrink-0 transition-opacity duration-1000 ${
-          mode === "pokemon" ? "opacity-100" : "opacity-0"
-        }`}>
-
-          <div className="h-full grid grid-cols-2 gap-12 px-14 py-12 items-start">
+        
+          <div className="h-full grid grid-cols-1 lg:grid-cols2
+                          gap-12 px-6 lg:px-14 py-12 items-start">
 
             {/* LEFT SIDE */}
             <div className="flex flex-col justify-between">
@@ -130,6 +156,16 @@ function ContentWrapper({ mode, searchQuery, onBack }) {
                   </button>
                 )}
 
+                <button onClick={()=> setIsShiny(!isShiny)}
+                   className={`mt-2 px-4 py-1 rounded-lg w-fit border transition ${
+                     isShiny
+                      ? "border-yellow-400 text-yellow-300 bg-yellow-400/10"
+                      : "border-white/10 text-gray-300 hover:border-yellow-400/40"
+                    }`}
+                >
+                  &#10024; {isShiny ? "Shiny Active" : "Activate Shiny"}
+                </button>
+
                 {/* TYPES */}
                 <div className="flex gap-2">
                   {pokemonData?.types?.map((type) => (
@@ -147,7 +183,10 @@ function ContentWrapper({ mode, searchQuery, onBack }) {
                 <div className="w-44 h-44 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center overflow-hidden">
                   {pokemonData && (
                     <img
-                      src={pokemonData.sprite}
+                      src={ isShiny && pokemonData.shiny_sprite
+                        ?  pokemonData.shiny_sprite
+                        : pokemonData.sprite}
+
                       alt={pokemonData.name}
                       className="w-40 h-40 object-contain"
                     />
@@ -164,8 +203,9 @@ function ContentWrapper({ mode, searchQuery, onBack }) {
                   <span className="animate-pulse text-white ml-1">|</span>
                 </p>
 
-                <button className="text-xs text-gray-400 hover:text-white transition-colors">
-                  🔊 Playing
+                <button onClick={playCry} 
+                className="text-xs text-gray-400 hover:text-white transition-colors">
+                  🔊 Play Cry
                 </button>
               </div>
             </div>
@@ -173,15 +213,18 @@ function ContentWrapper({ mode, searchQuery, onBack }) {
             {/* RIGHT SIDE */}
             <div className="flex flex-col items-center justify-start gap-3 pt-3">
 
-              <div className="-mt-10 mb-2">
-                {pokemonData && (
-                  <StatRadar
-                    key={pokemonData.name}
-                    stats={pokemonData.stats}
-                  />
+
+              <div className="mb-6 lg:-mt-10">
+                {pokemonData && mode == "pokemon" && (
+                  <div className="w-[240px] h-[280px] lg:w-[320px] lg:h-[320px]">
+                    <StatRadar
+                      key={pokemonData.name}
+                      stats={pokemonData.stats}
+                      />
+                  </div>
                 )}
 
-                <div className="flex flex-col items-center text-xs text-gray-400 mt-1">
+                <div className="flex flex-col items-center text-xs text-gray-400 mt-6 lg:mt-1">
                   <span className="tracking-[0.2em] text-[11px] text-gray-500">
                     BASE STAT TOTAL
                   </span>
@@ -199,7 +242,7 @@ function ContentWrapper({ mode, searchQuery, onBack }) {
                     <TypeChip key={type} type={type} />
                   ))}
                   {pokemonData?.type_effectiveness.x4.length > 0 && (
-  <>              <p className="text-red-400 text-xs">x4</p>
+                  <> <p className="text-red-400 text-xs">x4</p>
                   <div className="flex gap-2">
                       {pokemonData.type_effectiveness.x4.map(type => (
                       <TypeChip key={type} type={type} />
@@ -239,6 +282,12 @@ function ContentWrapper({ mode, searchQuery, onBack }) {
             </div>
           </div>
 
+          <div className="px-14 pb-10">
+            {pokemonData?.evolutions && (
+              <Evolution evolutions={pokemonData.evolutions} isShiny={isShiny} />
+            )}
+          </div>
+
           {/* BACK BUTTON */}
           <button
             onClick={onBack}
@@ -246,9 +295,8 @@ function ContentWrapper({ mode, searchQuery, onBack }) {
           >
             ← Back
           </button>
-
-        </div>
-      </div>
+      </>
+          )}
     </div>
   );
 }

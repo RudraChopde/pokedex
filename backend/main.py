@@ -73,8 +73,22 @@ def get_pokemon(name: str):
     url = f"https://pokeapi.co/api/v2/pokemon/{name.lower()}"
     res = requests.get(url)
 
+    # Fallback to species search
     if res.status_code != 200:
-        return {"error": "Pokemon not found"}
+        species_res = requests.get(
+           f"https://pokeapi.co/api/v2/pokemon-species/{name.lower()}"
+        )
+
+        if species_res.status_code != 200:
+            return {"error": "Pokemon not found"}
+        
+        species_data = species_res.json()
+
+        default_url = next( variety["pokemon"]["url"]
+                           for variety in species_data["varieties"]
+                            if variety["is_default"]
+                           )
+        res = requests.get(default_url)
 
     data = res.json()
 
@@ -82,6 +96,89 @@ def get_pokemon(name: str):
     species_url = data["species"]["url"]
     species_res = requests.get(species_url)
     species_data = species_res.json()
+    #print(species_data["varieties"])
+    forms = []
+    for variety in species_data["varieties"]:
+        pokemon_url = variety["pokemon"]["url"]
+        res_form = requests.get(pokemon_url)
+        form_data = res_form.json()
+
+        #TYPE EFFECTIVENESS
+        all_types = [
+            "normal","fire","water","electric","grass","ice",
+            "fighting","poison","ground","flying","psychic","bug",
+            "rock","ghost","dragon","dark","steel","fairy"
+        ]
+
+        type_multipliers = {type_name: 1 for type_name in all_types}
+
+        for pokemon_type in form_data["types"]:
+            type_name = pokemon_type["type"]["name"]
+
+            if type_name in type_cache:
+                damage = type_cache[type_name]
+
+            else:
+                type_url = pokemon_type["type"]["url"]
+                type_res = requests.get(type_url)
+                damage = type_res.json()["damage_relations"]
+                type_cache[type_name] = damage
+
+            for d in damage["double_damage_from"]:
+                type_multipliers[d["name"]] *= 2
+
+            for h in damage["half_damage_from"]:
+                type_multipliers[h["name"]] *= 0.5
+
+            for n in damage["no_damage_from"]:
+                type_multipliers[n["name"]] *= 0
+
+        #Group Results
+
+        type_effectiveness = {
+            "x4": [],
+            "x2": [],
+            "x0_5": [],
+            "x0_25": [],
+            "x0": []
+        }
+
+        for t, val in type_multipliers.items():
+           if val == 4:
+            type_effectiveness["x4"].append(t)
+           elif val == 2:
+            type_effectiveness["x2"].append(t)
+           elif val == 0.5:
+            type_effectiveness["x0_5"].append(t)
+           elif val == 0.25:
+            type_effectiveness["x0_25"].append(t)
+           elif val == 0:
+             type_effectiveness["x0"].append(t)
+
+        print(form_data["name"], type_effectiveness)
+
+        forms.append({
+            "name": form_data["name"],
+            "sprite": form_data["sprites"]["other"]["official-artwork"]["front_default"],
+            "shiny_sprite": form_data["sprites"]["other"]["official-artwork"]["front_shiny"],
+
+            "types": [
+                t["type"]["name"]
+                for t in form_data["types"]
+              ],
+
+            "stats": {
+               "hp": form_data["stats"][0]["base_stat"],
+               "attack": form_data["stats"][1]["base_stat"],
+               "defense": form_data["stats"][2]["base_stat"],
+               "sp_atk": form_data["stats"][3]["base_stat"],
+               "sp_def": form_data["stats"][4]["base_stat"],
+               "speed": form_data["stats"][5]["base_stat"],
+                    },
+
+            "cry": form_data["cries"]["latest"],
+            "type_effectiveness": type_effectiveness
+        })
 
     evolution_url = species_data["evolution_chain"]["url"]
     evolution_res = requests.get(evolution_url)
@@ -96,57 +193,7 @@ def get_pokemon(name: str):
 
     flavor_text = flavor_text.replace("\n", " ").replace("\f", " ")
 
-    # TYPE EFFECTIVENESS
-    all_types = [
-        "normal","fire","water","electric","grass","ice",
-        "fighting","poison","ground","flying","psychic","bug",
-        "rock","ghost","dragon","dark","steel","fairy"
-    ]
 
-    type_multipliers = {t: 1 for t in all_types}
-
-
-    for t in data["types"]:
-        type_name = t["type"]["name"]
-
-        if type_name in type_cache:
-            damage = type_cache[type_name]
-
-        else:
-            type_url = t["type"]["url"]
-            type_res = requests.get(type_url)
-            damage = type_res.json()["damage_relations"]
-            type_cache[type_name] = damage
-
-        for d in damage["double_damage_from"]:
-            type_multipliers[d["name"]] *= 2
-
-        for h in damage["half_damage_from"]:
-            type_multipliers[h["name"]] *= 0.5
-
-        for n in damage["no_damage_from"]:
-            type_multipliers[n["name"]] *= 0
-
-    # GROUP RESULTS
-    type_effectiveness = {
-        "x4": [],
-        "x2": [],
-        "x0_5": [],
-        "x0_25": [],
-        "x0": []
-    }
-
-    for t, val in type_multipliers.items():
-        if val == 4:
-            type_effectiveness["x4"].append(t)
-        elif val == 2:
-            type_effectiveness["x2"].append(t)
-        elif val == 0.5:
-            type_effectiveness["x0_5"].append(t)
-        elif val == 0.25:
-            type_effectiveness["x0_25"].append(t)
-        elif val == 0:
-            type_effectiveness["x0"].append(t)
 
     # FINAL RESPONSE
     pokemon = {
@@ -165,9 +212,9 @@ def get_pokemon(name: str):
         "sprite": data["sprites"]["other"]["official-artwork"]["front_default"],
         "shiny_sprite": data["sprites"]["other"]["official-artwork"]["front_shiny"],
         "description": flavor_text,
-        "type_effectiveness": type_effectiveness,  
         "evolutions": evolutions,
-        "cry": data["cries"]["latest"]
+        "cry": data["cries"]["latest"],
+        "forms": forms
     }
 
     return pokemon

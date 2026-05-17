@@ -21,7 +21,7 @@ const StatRadar = React.memo(function StatRadar({ stats }) {
     { stat: "DEF", value: stats.defense },
     { stat: "SpA", value: stats.sp_atk },
     { stat: "SpD", value: stats.sp_def },
-    { stat: "SPD", value: stats.speed }
+    { stat: "SPE", value: stats.speed }
   ], [stats]);
 
   // only animate ONCE per Pokémon
@@ -29,7 +29,7 @@ const StatRadar = React.memo(function StatRadar({ stats }) {
 
   useEffect(() => {
     setHasAnimated(false); // reset when stats change
-    const timer = setTimeout(() => setHasAnimated(true), 100);
+    const timer = setTimeout(() => setHasAnimated(true), 40);
     return () => clearTimeout(timer);
   }, [stats]);
 
@@ -56,7 +56,7 @@ const StatRadar = React.memo(function StatRadar({ stats }) {
                   </text>
 
                   <text
-                    y={6}
+                    y={2}
                     textAnchor="middle"
                     fill="#f97316"
                     fontSize={13}

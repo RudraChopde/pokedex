@@ -1,68 +1,161 @@
 # Pokédex
 
-Reimagining the Pokedex as a modern, generation-aware web product.
+Reimagining the Pokédex as a modern, generation-aware web application.
+
+---
 
 ## Features
 
--  Live Pokémon Search (API-powered)
--  Live Search Autocomplete
--  Dynamic Stat Radar Visualization
--  Accurate Type Effectiveness Calculation (competitive-level)
--  Interactive Form & Mega Evolution Interface
--  Real Pokédex Entries with Typewriter Animation
--  Shiny Pokémon Toggle
--  Responsive Layout
--  BackEnd Caching for faster searches
--  Modern Rotom-inspired UI/UX
+- Live Pokémon Search (PokéAPI-powered)
+- Real-time Search Autocomplete
+- Dynamic Radar Stat Visualization
+- Accurate Competitive Type Effectiveness Engine
+  - ×4, ×2, ×0.5, ×0.25, ×0 multipliers
+  - Correct dual-type calculations
+- Interactive Forms & Transformation System
+  - Mega Evolutions
+  - Alternate Forms
+  - Battle Forms
+- Reactive Form Switching
+  - Instantly updates:
+    - stats
+    - typings
+    - weaknesses/resistances
+    - radar chart
+    - cries
+    - sprites
+- Real Pokédex Entries with Typewriter Animation
+- Pokémon Cry Playback
+- Shiny Pokémon Toggle
+- Evolution Chain Visualization
+- Responsive Multi-device Layout
+- Backend Response Caching
+- Modern Rotom-inspired UI/UX
 
-## Tech Stack Used:
-Frontend
+---
+
+# Tech Stack
+
+## Frontend
 - React (Vite)
-- Tailwindcss
+- TailwindCSS
 
-BackEnd
+## Backend
 - FastAPI
 
-Data Visualization
+## Visualization
 - Recharts
 
-# In Progress
-- Real Forms and Regional Variants System
-- Branch Evolution Chains
-- Animations and Transitions
-- Compare Mode
+---
 
-# Status as of Now
-Day 1: Layouting
-Day 2: Restructured Screen into 2D layout, added accent styling, defined forms & megas architecture plan
-Day 3: Built Pokémon battle panel, i.e radar stat chart, BST display, type effectiveness, mega evolution toggle logics, and dex entry section
-Day 4: Integrated FastAPI backend with PokéAPI
-- Enabled live Pokémon search (real-time data fetching)
+# Currently In Progress
+
+- Branching Evolution Trees
+- UI Animations & Transitions
+- Compare Mode
+- Regional Variant Enhancements
+
+---
+
+# Development Progress
+
+## Day 1
+- Initial layout structure
+- Core visual direction
+
+## Day 2
+- Restructured app into scalable 2D layout architecture
+- Added accent styling system
+- Planned forms & mega evolution architecture
+
+## Day 3
+- Built Pokémon battle panel
+- Added:
+  - Radar stat chart
+  - BST display
+  - Type effectiveness section
+  - Dex entry section
+- Implemented early mega evolution logic
+
+## Day 4
+### Backend + API Integration
+- Integrated FastAPI backend with PokéAPI
+- Enabled live Pokémon search
 - Connected frontend to backend API
-- Rendered dynamic:
-  - Pokémon stats
-  - Types
-  - Official artwork sprites
-- Added real Pokédex descriptions (species endpoint)
-- Implemented typewriter animation for dex entry
-- Optimized rendering (memoization for radar chart)
-- Implemented fully accurate type effectiveness system:
-  - Supports ×4, ×2, ×0.5, ×0.25, ×0 multipliers
-  - Works correctly for dual-type Pokémon
-### Day 5
-Focused on responsiveness, UX polish, and search improvements:
-- Added Pokémon cry support
-- Added shiny sprite support
-- Added evolution chain visualization
-- Refactored layout architecture for scalable rendering
-- Rebuilt content rendering system using conditional rendering
-- Fixed overflow & scrolling conflicts across layouts
-- Implemented responsive multi-device support
-- Improved evolution chain responsiveness
+
+### Dynamic Rendering
+- Rendered:
+  - stats
+  - typings
+  - official artwork sprites
+  - Pokédex descriptions
+
+## Day 5
+### UX + Performance
+- Added typewriter animation
+- Optimized radar rendering using memoization
+
+### Battle System
+- Built fully accurate type effectiveness engine
+- Supports:
+  - ×4
+  - ×2
+  - ×0.5
+  - ×0.25
+  - ×0 immunities
+- Correct dual-type interaction calculations
+
+## Day 6
+### UX + Responsiveness
+- Improved responsive multi-device support
+- Fixed overflow & scrolling conflicts
 - Optimized radar chart sizing and spacing
-- Added shiny evolution sprite support
-- Improved search responsiveness and loading flow
+- Improved loading flow and rendering responsiveness
+
+### Features
+- Added Pokémon cries
+- Added shiny Pokémon support
+- Added evolution chain visualization
+- Added shiny evolution sprites
+
+## Day 7
+### Search System
+- Implemented live autocomplete system
+- Built interactive dropdown behavior
+- Added keyboard navigation support
+- Improved dropdown UX interactions
+
+### Architecture
+- Refactored scalable rendering architecture
+- Rebuilt content rendering using conditional rendering
 - Added backend caching for faster repeated searches
-- Built live Pokémon autocomplete system
-- Implemented interactive autocomplete dropdown behavior
-- Polished dropdown UX interactions and mobile responsiveness
+
+## Day 8
+### Dynamic Forms System
+- Implemented fully reactive forms architecture
+- Supports:
+  - Mega Evolutions
+  - Alternate Forms
+  - Battle Forms
+  - Form-specific typings
+
+### Reactive Form Switching
+- Instantly updates:
+  - stats
+  - radar chart
+  - typings
+  - type effectiveness
+  - cries
+  - sprites
+  - shiny sprites
+
+## Day 9
+### Backend Improvements
+- Built dynamic form aggregation system using PokéAPI varieties
+- Added form-aware type effectiveness calculations
+- Added fallback species searching for special-form Pokémon
+
+### UI Improvements
+- Added interactive form-switching interface
+- Improved radar chart balancing and readability
+- Enhanced autocomplete UX behavior

@@ -4,8 +4,6 @@ import TypeChip from "../ui/types";
 import Evolution from "../Evolutions";
 
 function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete }) {
-  const [form, setForm] = useState("Base");
-  const [isMega, setIsMega] = useState(false);
   const [pokemonData, setPokemonData] = useState(null);
   const [typedText, setTypedText] = useState("");
   const audioRef = useRef(null);
@@ -24,6 +22,7 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete }) {
       })
       .then((data) => {
         setPokemonData(data);
+        setActiveForm(0);
           onSearchComplete?.();
       })
           .catch((err) => console.error(err));
@@ -48,30 +47,31 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete }) {
         return;
       }
 
-      // ✅ SAFE — no out-of-bounds ever
       setTypedText(text.slice(0, index));
     }, 20);
 
     return () => clearInterval(interval);
   }, [pokemonData]);
 
-  const forms = ["Base", "Ash"];
-  const hasMega = true;
 
-  const bst = pokemonData?.stats
-    ? Object.values(pokemonData.stats).reduce((sum, stat) => sum + stat, 0)
+  const [activeForm, setActiveForm] = useState(0);
+  const currForm = pokemonData?.forms?.[activeForm] || null;
+  const bst = currForm?.stats
+    ? Object.values(currForm.stats).reduce((sum, stat) => sum + stat, 0)
     : 0;
+
+  const currform = pokemonData?.forms?.[activeForm] || null
 
   const playCry = () => {
 
-    console.log(pokemonData.cry);
-    if (!pokemonData?.cry) return;
+    console.log(currform.cry);
+    if (!currform?.cry) return;
 
     if (audioRef.current) {
       audioRef.current.pause();
     }
 
-    audioRef.current = new Audio(pokemonData.cry);
+    audioRef.current = new Audio(currform.cry);
     audioRef.current.volume = 0.4;
 
     audioRef.current.play().catch(err => {
@@ -131,30 +131,21 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete }) {
                 </p>
 
                 {/* Forms */}
-                <div className="flex gap-1 bg-white/[0.04] p-1 rounded-xl w-fit">
-                  {forms.map((f) => (
-                    <button
-                      key={f}
-                      onClick={() => setForm(f)}
-                      className={`px-3 py-1 rounded-lg text-xs transition ${
-                        form === f
-                          ? "bg-white/[0.08] text-white"
-                          : "text-gray-400 hover:text-white"
-                      }`}
-                    >
-                      {f}
-                    </button>
+                <div className="flex gap-1 bg-white/[0.04] p-1 rounded-xl w-fit flex-wrap">
+                  {pokemonData?.forms?.map((form, index) => (
+                  <button
+                    key={form.name}
+                    onClick={() => setActiveForm(index)}
+                    className={`px-3 py-1 rounded-lg text-xs transition ${
+                    activeForm === index
+                      ? "bg-white/[0.08] text-white"
+                      : "text-gray-400 hover:text-white"
+                    }`}
+                  >
+                    {form.name.replaceAll("-", " ").replace(/\b\w/g, c => c.toUpperCase())}
+                  </button>
                   ))}
                 </div>
-
-                {hasMega && (
-                  <button
-                    onClick={() => setIsMega(!isMega)}
-                    className="mt-2 px-4 py-1 rounded-lg w-fit border border-orange-500/40 text-orange-400 hover:bg-orange-500/10 transition"
-                  >
-                    {isMega ? "🧬 Revert Mega" : "🧬 Activate Mega"}
-                  </button>
-                )}
 
                 <button onClick={()=> setIsShiny(!isShiny)}
                    className={`mt-2 px-4 py-1 rounded-lg w-fit border transition ${
@@ -168,7 +159,7 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete }) {
 
                 {/* TYPES */}
                 <div className="flex gap-2">
-                  {pokemonData?.types?.map((type) => (
+                  {currform?.types?.map((type) => (
                     <TypeChip key={type} type={type} />
                   ))}
                 </div>
@@ -183,11 +174,11 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete }) {
                 <div className="w-44 h-44 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center overflow-hidden">
                   {pokemonData && (
                     <img
-                      src={ isShiny && pokemonData.shiny_sprite
-                        ?  pokemonData.shiny_sprite
-                        : pokemonData.sprite}
+                      src={ isShiny && currform.shiny_sprite
+                        ?  currform.shiny_sprite
+                        : currform.sprite}
 
-                      alt={pokemonData.name}
+                      alt={currform.name}
                       className="w-40 h-40 object-contain"
                     />
                   )}
@@ -218,9 +209,8 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete }) {
                 {pokemonData && mode == "pokemon" && (
                   <div className="w-[240px] h-[280px] lg:w-[320px] lg:h-[320px]">
                     <StatRadar
-                      key={pokemonData.name}
-                      stats={pokemonData.stats}
-                      />
+                      stats={currform.stats}
+                    />
                   </div>
                 )}
 
@@ -238,13 +228,13 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete }) {
               <div className="flex flex-col items-center gap-2 text-sm">
                 <p className="text-gray-400 text-xs tracking-wider">WEAK TO</p>
                 <div className="flex flex-wrap justify-center gap-2">
-                  {pokemonData?.type_effectiveness.x2.map(type => (
+                  {currForm?.type_effectiveness?.x2?.map(type => (
                     <TypeChip key={type} type={type} />
                   ))}
-                  {pokemonData?.type_effectiveness.x4.length > 0 && (
+                  {currForm?.type_effectiveness?.x4?.length > 0 && (
                   <> <p className="text-red-400 text-xs">x4</p>
                   <div className="flex gap-2">
-                      {pokemonData.type_effectiveness.x4.map(type => (
+                      {currForm?.type_effectiveness?.x4?.map(type => (
                       <TypeChip key={type} type={type} />
                        ))}
                   </div>
@@ -254,14 +244,14 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete }) {
 
                 <p className="text-gray-400 text-xs tracking-wider">RESISTS</p>
                 <div className="flex flex-wrap justify-center gap-2">
-                 {pokemonData?.type_effectiveness.x0_5.map(type => (
+                 {currForm?.type_effectiveness?.x0_5?.map(type => (
                   <TypeChip key={type} type={type} />
                  ))}
-                 {pokemonData?.type_effectiveness.x0_25.length > 0 && (
+                 {currForm?.type_effectiveness?.x0_25?.length > 0 && (
                    <>
                   <p className="text-blue-400 text-xs">x0.25</p>
                   <div className="flex gap-2">
-                      {pokemonData.type_effectiveness.x0_25.map(type => (
+                      {currForm.type_effectiveness?.x0_25?.map(type => (
                         <TypeChip key={type} type={type} />
                       ))}
                   </div>
@@ -271,7 +261,7 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete }) {
                 
                 <p className="text-gray-400 text-xs tracking-wider">IMMUNE TO</p>
                 <div className="flex flex-wrap justify-center gap-2">
-                  {pokemonData?.type_effectiveness.x0.map(type => (
+                  {currForm?.type_effectiveness?.x0?.map(type => (
                   <TypeChip key={type} type={type} />
                   ))}
                 </div>
@@ -286,6 +276,7 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete }) {
             {pokemonData?.evolutions && (
               <Evolution evolutions={pokemonData.evolutions} isShiny={isShiny} />
             )}
+
           </div>
 
           {/* BACK BUTTON */}
@@ -298,6 +289,7 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete }) {
       </>
           )}
     </div>
+
   );
 }
 

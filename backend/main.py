@@ -1,3 +1,11 @@
+MODERN_EVOLUTION_ADDITIONS = {
+    "vikavolt": "Modern: Using Thunder Stone",
+    "magnezone": "Modern: Using Thunder Stone",
+    "probopass": "Modern: Using Thunder Stone",
+    "leafeon": "Modern: Using Leaf Stone",
+    "glaceon": "Modern: Using Ice Stone",
+}
+
 type_cache = {}
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,55 +25,141 @@ app.add_middleware(
 def home():
     return {"message": "Pokemon API Running!"}
 
-def parse_evolution_chain(chain):
-    evolutions = []
+def parse_evolution_chain(node):
+    evo_details = node["evolution_details"]
 
-    current = chain
+    pokemon_name = node["species"]["name"]
 
-    while current:
-        evo_details = current["evolution_details"]
+    trigger = None
 
-        trigger = None
+    conditions = []
 
-        if evo_details:
-            details = evo_details[0]
+    if evo_details:
+        details = evo_details[0]
+    
+        if details["min_level"]:
+            conditions.append(f"Level {details['min_level']}")
 
-            if details["min_level"]:
-                trigger = f"Level {details['min_level']}"
+        if details["item"]:
+            conditions.append(
+                f"Using {details['item']['name'].replace('-', ' ').title()}"
+            )
 
-            elif details["item"]:
-                trigger = f"Use {details['item']['name']}"
+        if details["held_item"]:
+            conditions.append(
+                f"Holding {details['held_item']['name'].replace('-', ' ').title()}"
+            )
 
-            elif details["trigger"]:
-                trigger = details["trigger"]["name"]
+        if details["min_happiness"]:
+            conditions.append("Via High Friendship")
 
-        pokemon_name = current["species"]["name"]
-        species_url = current["species"]["url"]
-        pokemon_id = species_url.rstrip("/").split("/")[-1]
-       
-        #pokemon_res = requests.get(f"https://pokeapi.co/api/v2/pokemon/{pokemon_name}")
-        #pokemon_data = pokemon_res.json()
-        #sprite = pokemon_data["sprites"]["other"]["official-artwork"]["front_default"]
-        #shiny_sprite = pokemon_data["sprites"]["other"]["official-artwork"]["front_shiny"] 
+        if details["time_of_day"]:
+            conditions.append( f" During {details["time_of_day"].capitalize()} time")
 
-        sprite = f"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{pokemon_id}.png"
-        shiny_sprite = f"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/{pokemon_id}.png"
+        if details["known_move"]:
+            conditions.append(
+                f"Learn {details['known_move']['name'].replace('-', ' ').title()}"
+            )
+        
+        if details["known_move_type"]:
+            conditions.append(
+                f"After Learning {details['known_move_type']['name'].title()} Type Move"
+            )
 
-        evolutions.append({
-            "name": pokemon_name.capitalize(),
-            "sprite": sprite,
-            "shiny_sprite":shiny_sprite,
-            "trigger": trigger
-        })
+        if details["min_affection"]:
+            conditions.append("High Affection")  
+        
+        if details["location"]:
+            location_name = details["location"]["name"]
+
+            SPECIAL_LOCATIONS = {
+            "eterna-forest": "Near Moss Rock",
+            "sinnoh-route-217": "Near Ice Rock",
+            "mt-coronet": "Near Magnetic Field",
+            "chargestone-cave": "Near Magnetic Field",
+            "vast-poni-canyon": "Near Magnetic Field",
+            "blush-mountain": "Near Magnetic Field",
+            }
+
+            if location_name in SPECIAL_LOCATIONS:
+                conditions.append(
+                    SPECIAL_LOCATIONS[location_name]
+                )
+
+            else:
+                conditions.append(
+                    f"Near {location_name.replace('-', ' ').title()}"
+                )
+  
+
+        if details["trigger"]:
+            trigger_name = details["trigger"]["name"]
+
+            if trigger_name == "trade":
+                conditions.append("Trade")
+        
+        if pokemon_name in MODERN_EVOLUTION_ADDITIONS:
+            conditions.append(
+                MODERN_EVOLUTION_ADDITIONS[pokemon_name]
+            )
+
+    if evo_details:
+        details = evo_details[0]
+
+        if (
+            details["trigger"]
+            and details["trigger"]["name"] == "trade"
+            and details["held_item"]
+        ):
+
+            held_item_name = (
+                details["held_item"]["name"]
+                .replace("-", " ")
+                .title()
+            )
+
+            trigger = (
+                f"Trade while holding {held_item_name}"
+            )
+
+        elif (
+            details["trigger"]
+            and details["trigger"]["name"] == "trade"
+        ):
+
+            trigger = "Trade"
+
+        else:
+            trigger = " + ".join(conditions) if conditions else None
+
+    else:
+        trigger = " + ".join(conditions) if conditions else None
 
     
-        if current["evolves_to"]:
-            current = current["evolves_to"][0]
-        else:
-            current = None
+    species_url = node["species"]["url"]
+    pokemon_id = species_url.rstrip("/").split("/")[-1]
 
-    return evolutions
+    sprite = (
+        f"https://raw.githubusercontent.com/PokeAPI/sprites/master/"
+        f"sprites/pokemon/other/official-artwork/{pokemon_id}.png"
+    )
 
+    shiny_sprite = (
+        f"https://raw.githubusercontent.com/PokeAPI/sprites/master/"
+        f"sprites/pokemon/other/official-artwork/shiny/{pokemon_id}.png"
+    )
+
+    return {
+        "name": pokemon_name.capitalize(),
+        "sprite": sprite,
+        "shiny_sprite": shiny_sprite,
+        "trigger": trigger,
+
+        "children": [
+            parse_evolution_chain(child)
+            for child in node["evolves_to"]
+        ]
+    }
 
 @app.get("/pokemon/{name}")
 def get_pokemon(name: str):

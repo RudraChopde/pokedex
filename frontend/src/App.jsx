@@ -32,6 +32,7 @@ function App() {
           mode={mode}
           searchQuery={searchQuery}
           onBack={handleBack}
+          onSearch={handleSearch}
           onSearchComplete={() => setMode("pokemon")}
         />
       </div>

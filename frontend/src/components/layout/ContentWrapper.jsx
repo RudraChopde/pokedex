@@ -3,7 +3,7 @@ import StatRadar from "../pokemon/stats";
 import TypeChip from "../ui/types";
 import Evolution from "../Evolutions";
 
-function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete }) {
+function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete, onSearch }) {
   const [pokemonData, setPokemonData] = useState(null);
   const [typedText, setTypedText] = useState("");
   const audioRef = useRef(null);
@@ -274,7 +274,8 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete }) {
 
           <div className="px-14 pb-10">
             {pokemonData?.evolutions && (
-              <Evolution evolutions={pokemonData.evolutions} isShiny={isShiny} />
+              <Evolution evolutions={pokemonData.evolutions} isShiny={isShiny}
+              onSearch={onSearch} />
             )}
 
           </div>

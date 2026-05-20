@@ -2,12 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import StatRadar from "../pokemon/stats";
 import TypeChip from "../ui/types";
 import Evolution from "../Evolutions";
+import { genThemes } from "../../theme/genThemes";
 
-function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete, onSearch }) {
+function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete, onSearch, onSearchError }) {
   const [pokemonData, setPokemonData] = useState(null);
   const [typedText, setTypedText] = useState("");
   const audioRef = useRef(null);
   const [isShiny, setIsShiny] = useState(false);
+  const theme = genThemes[pokemonData?.generation] || genThemes[1];
 
   // FETCH
   useEffect(() => {
@@ -24,9 +26,12 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete, onSearch 
         setPokemonData(data);
         setActiveForm(0);
           onSearchComplete?.();
+        if (data.error) throw new Error("not found");
       })
-          .catch((err) => console.error(err));
-  }, [searchQuery]);
+      .catch(() => {
+        onSearchError?.(searchQuery);
+      });
+   }, [searchQuery]);
 
   // TYPEWRITER 
   useEffect(() => {
@@ -60,32 +65,30 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete, onSearch 
     ? Object.values(currForm.stats).reduce((sum, stat) => sum + stat, 0)
     : 0;
 
-  const currform = pokemonData?.forms?.[activeForm] || null
-
   const playCry = () => {
-
-    console.log(currform.cry);
-    if (!currform?.cry) return;
+    if (!currForm?.cry) return;
 
     if (audioRef.current) {
       audioRef.current.pause();
     }
 
-    audioRef.current = new Audio(currform.cry);
+    audioRef.current = new Audio(currForm.cry);
     audioRef.current.volume = 0.4;
 
     audioRef.current.play().catch(err => {
       console.error("Audio failed:", err);
-      });
+    });
   };
 
+  
   return (
     //<div className='relative ${mode === "pokemon" ? "min-h-[780px]" : "h-[520px]"} overflow-visible rounded-3xl bg-gradient-to-br from-[#141822] to-[#0f1117] border border-[#2a2f3a] shadow-[0_0_80px_rgba(255,106,0,0.08)]'>
       <div className={`relative ${
         mode === "pokemon"
         ? "min-h-[780px]"
         : "h-[520px]"
-        } overflow-visible rounded-3xl bg-gradient-to-br from-[#141822] to-[#0f1117] border border-[#2a2f3a] shadow-[0_0_80px_rgba(255,106,0,0.08)]`}>
+        } overflow-visible rounded-3xl bg-gradient-to-br ${theme.gradient} 
+        border border-[#2a2f3a] shadow-[0_0_80px_rgba(255,106,0,0.08)]`}>
 
         {mode !== "pokemon" ? (
         <div className="min-h-[520px] flex items-center justify-center">
@@ -112,6 +115,17 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete, onSearch 
           </div>
           )}
 
+          {mode === "error" && (
+            <div className="flex flex-col items-center gap-4">
+              <p className="text-red-400 text-lg font-semibold">
+                "{searchQuery}" not found
+              </p>
+              <p className="text-gray-500 text-sm">
+                Check the spelling and try again
+              </p>
+            </div>
+          )}
+
         </div>
         ) : (
         <>
@@ -119,7 +133,7 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete, onSearch 
 
         {/* RIGHT PANEL */}
         
-          <div className="h-full grid grid-cols-1 lg:grid-cols2
+          <div className="h-full grid grid-cols-1 lg:grid-cols-2
                           gap-12 px-6 lg:px-14 py-12 items-start">
 
             {/* LEFT SIDE */}
@@ -159,7 +173,7 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete, onSearch 
 
                 {/* TYPES */}
                 <div className="flex gap-2">
-                  {currform?.types?.map((type) => (
+                  {currForm?.types?.map((type) => (
                     <TypeChip key={type} type={type} />
                   ))}
                 </div>
@@ -172,13 +186,13 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete, onSearch 
               {/* IMAGE */}
               <div className="flex flex-col items-center mt-6">
                 <div className="w-44 h-44 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center overflow-hidden">
-                  {pokemonData && (
+                  {pokemonData && currForm && (
                     <img
-                      src={ isShiny && currform.shiny_sprite
-                        ?  currform.shiny_sprite
-                        : currform.sprite}
+                      src={ isShiny && currForm.shiny_sprite
+                        ?  currForm.shiny_sprite
+                        : currForm.sprite}
 
-                      alt={currform.name}
+                      alt={currForm.name}
                       className="w-40 h-40 object-contain"
                     />
                   )}
@@ -209,7 +223,7 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete, onSearch 
                 {pokemonData && mode == "pokemon" && (
                   <div className="w-[240px] h-[280px] lg:w-[320px] lg:h-[320px]">
                     <StatRadar
-                      stats={currform.stats}
+                      stats={currForm.stats}
                     />
                   </div>
                 )}

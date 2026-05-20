@@ -1,21 +1,23 @@
-# Pokédex
+# Rotom Pokédex (Name TBD)
 
-Reimagining the Pokédex as a modern, generation-aware web application.
+A modern, generation aware Pokémon companion app 
+  Reimagining the Rotom Deex as a complete full experience
 
 ---
+## What's Inside (FOR NOW)
+- **Splash Screen** — interactive boot sequence with Rotom Dex animation, cry playback, and typewriter dialogue
+- **Pokédex** — live Pokémon search with full stats, typings, evolution chains, forms, and more
 
 ## Features
 
 - Live Pokémon Search (PokéAPI-powered)
-- Real-time Search Autocomplete
+- Real-time Search Autocomplete with keyboard navigations
 - Dynamic Radar Stat Visualization
 - Accurate Competitive Type Effectiveness Engine
   - ×4, ×2, ×0.5, ×0.25, ×0 multipliers
   - Correct dual-type calculations
 - Interactive Forms & Transformation System
-  - Mega Evolutions
-  - Alternate Forms
-  - Battle Forms
+  - Mega Evolutions, Alternate Forms, Battle Forms
 - Reactive Form Switching
   - Instantly updates:
     - stats
@@ -29,6 +31,7 @@ Reimagining the Pokédex as a modern, generation-aware web application.
 - Shiny Pokémon Toggle
 - Evolution Chain Visualization
 - Responsive Multi-device Layout
+- Generation aware UI Theming
 - Backend Response Caching
 - Modern Rotom-inspired UI/UX
 
@@ -39,21 +42,23 @@ Reimagining the Pokédex as a modern, generation-aware web application.
 ## Frontend
 - React (Vite)
 - TailwindCSS
+- Recharts
 
 ## Backend
 - FastAPI
 
-## Visualization
-- Recharts
-
 ---
+
 
 # Currently In Progress
 
-- Branching Evolution Trees
-- UI Animations & Transitions
+- Hub Screen — central navigation for all dex modules
+- Move Dex
+- Ability Dex
+- Item Dex
 - Compare Mode
 - Regional Variant Enhancements
+- UI Animations & Transitions
 
 ---
 
@@ -207,3 +212,8 @@ Reimagining the Pokédex as a modern, generation-aware web application.
 - Refined recursive component architecture
 - Improved scalable state propagation
 - Cleaned reusable evolution rendering logic
+
+### Day 12
+- Changed the Flow of the Project
+- Bug Fixes (UI/UX and Backend)
+- Added Splash Screen to start the new approach of the project

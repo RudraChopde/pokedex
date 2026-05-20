@@ -1,3 +1,49 @@
+function EvolutionConnector({ trigger }) {
+  return (
+    <div className="flex flex-col items-center my-4">
+
+      <div className="text-orange-400 text-xl leading-none">
+        ↓
+      </div>
+
+      {trigger && (
+        <div
+          className="
+            px-3 py-1 my-2
+            rounded-full
+            bg-orange-500/10
+            border border-orange-500/20
+            text-orange-300
+            text-xs lg:text-sm
+            tracking-wide
+            text-center
+            max-w-[220px]
+          "
+        >
+          {trigger}
+        </div>
+      )}
+
+      <div className="text-orange-400 text-xl leading-none">
+        ↓
+      </div>
+
+    </div>
+  );
+}
+
+function isLinearChain(node) {
+  if (node.children.length > 1) {
+    return false;
+  }
+
+  if (node.children.length === 0) {
+    return true;
+  }
+
+  return isLinearChain(node.children[0]);
+}
+
 function EvolutionNode({ node, isShiny, onSearch }) {
   return (
     <div className="flex flex-col items-center">
@@ -31,18 +77,13 @@ function EvolutionNode({ node, isShiny, onSearch }) {
           {node.name}
         </p>
 
-        {node.trigger && (
-          <p className="text-xs text-orange-400 mt-2 tracking-wide">
-            {node.trigger}
-          </p>
-        )}
       </button>
 
       {/* CHILDREN */}
       {node.children.length > 0 && (
         <>
           {/* CONNECTOR */}
-          <div className="w-[2px] h-8 bg-white/10 my-4" />
+          <EvolutionConnector trigger={node.children[0]?.trigger} />
 
           {/* BRANCHES */}
           <div
@@ -69,9 +110,12 @@ function EvolutionNode({ node, isShiny, onSearch }) {
 
 export default function Evolutions({ evolutions, isShiny, onSearch }) {
   if (!evolutions) return null;
+  const linear = isLinearChain(evolutions);
 
   return (
-    <div className="mt-14 flex flex-col items-center">
+    <div className={`mt-14 flex ${linear ? 
+                    "flex-row flex-wrap justify-center items-center gap-4 lg:gap-8" 
+                    : "flex-col items-center"} `}>
       <h2 className="text-3xl font-bold text-white mb-10 tracking-wide">
         Evolution Chain
       </h2>

@@ -16,8 +16,8 @@ export const genThemes = {
     gradient: "from-[#1a1f3a] to-[#0f1117]",
   },
   5: {
-    accent: "#000107",
-    gradient: "from-[#1c2238] to-[#0f1117]",
+    accent: "#c8c8c8",
+    gradient: "from-[#1c1c1c] to-[#0f1117]",
   },
   6: {
     accent: "#0033ff",

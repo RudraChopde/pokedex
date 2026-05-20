@@ -1,3 +1,7 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import requests
+
 MODERN_EVOLUTION_ADDITIONS = {
     "vikavolt": "Modern: Using Thunder Stone",
     "magnezone": "Modern: Using Thunder Stone",
@@ -7,9 +11,17 @@ MODERN_EVOLUTION_ADDITIONS = {
 }
 
 type_cache = {}
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-import requests
+pokemon_cache = {}
+pokemon_list_cache = []
+
+ROMAN_TO_INT = {
+    "i": 1, "ii": 2, "iii": 3, "iv": 4, "v": 5,
+    "vi": 6, "vii": 7, "viii": 8, "ix": 9
+}
+
+def parse_generation(gen_str):
+    roman = gen_str.split("-")[-1]
+    return ROMAN_TO_INT.get(roman, 1)
 
 app = FastAPI()
 
@@ -163,7 +175,10 @@ def parse_evolution_chain(node):
 
 @app.get("/pokemon/{name}")
 def get_pokemon(name: str):
-
+    key = name.lower()
+    if key in pokemon_cache:
+        return pokemon_cache[key]
+    
     url = f"https://pokeapi.co/api/v2/pokemon/{name.lower()}"
     res = requests.get(url)
 
@@ -249,7 +264,6 @@ def get_pokemon(name: str):
            elif val == 0:
              type_effectiveness["x0"].append(t)
 
-        print(form_data["name"], type_effectiveness)
 
         forms.append({
             "name": form_data["name"],
@@ -292,6 +306,7 @@ def get_pokemon(name: str):
     # FINAL RESPONSE
     pokemon = {
         "name": data["name"].capitalize(),
+        "generation": parse_generation(species_data["generation"]["name"]),
         "height": data["height"],
         "weight": data["weight"],
         "types": [t["type"]["name"] for t in data["types"]],
@@ -311,14 +326,16 @@ def get_pokemon(name: str):
         "forms": forms
     }
 
+    pokemon_cache[key] = pokemon
     return pokemon
 
 @app.get("/pokemon-list")
 def get_pokemon_list():
+    global pokemon_list_cache
+    if pokemon_list_cache:
+        return pokemon_list_cache
+
     res = requests.get("https://pokeapi.co/api/v2/pokemon?limit=1025")
     data = res.json()
-
-    return [
-        pokemon["name"].capitalize()
-        for pokemon in data["results"]
-    ]
+    pokemon_list_cache = [p["name"].capitalize() for p in data["results"]]
+    return pokemon_list_cache

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Search } from "lucide-react";
 function Header({onSearch})
 {
@@ -6,6 +6,7 @@ function Header({onSearch})
     const [allPokemon, setAllPokemon] = useState([]);
     const [suggest, setSuggest] = useState([]);
     const [selectedIndex, setSelectedIndex] = useState(-1);
+    const inputRef = useRef(null);
 
     const handleSearch = () =>
     {
@@ -50,6 +51,10 @@ function Header({onSearch})
             }
 
         }
+        else if(e.key == "Escape")
+        {
+            setSuggest([])
+        }
     };
 
     useEffect(() => {
@@ -59,14 +64,24 @@ function Header({onSearch})
         .catch((err) => console.error(err));
     }, []);
 
-    console.log(suggest);
-    console.log(allPokemon);
+    useEffect(() => {
+    const handleGlobalKey = (e) => {
+        if (e.key === "/" && document.activeElement !== inputRef.current) {
+            e.preventDefault();
+            inputRef.current?.focus();
+        }
+    };
+    window.addEventListener("keydown", handleGlobalKey);
+    return () => window.removeEventListener("keydown", handleGlobalKey);
+}, []);
+
 
     return(
         <div className="mb-10 relative z-50">
             <div className="h-14 overflow-visible bg-[#161b22] rounded-2xl flex items-center px-6 shadow-inner border border-white/5
-                            focus-within: border-white/20 transition-color duratio-200">
+                            focus-within: border-white/20 transition-colors duration-200">
                 <input type="text"
+                    ref={inputRef}
                     placeholder="Search Pokemon......"
                     value={query}
                     onChange={(e) => {
@@ -93,10 +108,13 @@ function Header({onSearch})
                     style={{ color: "#e5e7eb" }}
                 />
 
+                <span className="text-gray-600 text-xs mr-2 hidden sm:block">Press /</span>
                 <button onClick={handleSearch}
                     className="ml-4 text-gray-500 hover:text-white transition-colors duration-200">
                     <Search size={18}/>    
                 </button>
+
+
             </div>
 
                 {suggest.length > 0 && (

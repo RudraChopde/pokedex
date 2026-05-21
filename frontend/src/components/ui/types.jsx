@@ -1,4 +1,4 @@
-const typeColors = {
+export const typeColors = {
   normal: "bg-zinc-500/20 text-zinc-300",
   fire: "bg-red-500/20 text-red-400",
   water: "bg-blue-500/20 text-blue-400",

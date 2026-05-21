@@ -52,13 +52,15 @@ A modern, generation aware Pokémon companion app
 
 # Currently In Progress
 
-- Hub Screen — central navigation for all dex modules
 - Move Dex
 - Ability Dex
 - Item Dex
 - Compare Mode
 - Regional Variant Enhancements
 - UI Animations & Transitions
+
+# Planned
+- Regional variant evolution chains
 
 ---
 
@@ -217,3 +219,31 @@ A modern, generation aware Pokémon companion app
 - Changed the Flow of the Project
 - Bug Fixes (UI/UX and Backend)
 - Added Splash Screen to start the new approach of the project
+
+### Day 13
+#### Navigation & Architecture
+- Introduced multi-page app architecture (Splash → Hub → Feature screens)
+- Built Hub Screen with type-themed section cards
+- Added Sidebar with hamburger navigation across all feature screens
+- Added "Back to Hub" navigation flow
+
+#### Search UX
+- Added ESC to close search dropdown
+- Added Press / shortcut to focus search bar instantly
+- Built MissingNo error screen for invalid Pokémon searches
+
+### Day 14
+#### Evolution Chain Overhaul
+- Rebuilt evolution layout system from scratch
+- Linear chains now render horizontally with → connectors
+- Branching chains now render as a tree with CSS branch lines
+- Each branch child now shows its own correct trigger label
+- Eevee-style large branches wrap into a grid automatically
+- Added "does not evolve" message for single-stage Pokémon
+
+#### UI & Theming
+- Wired up generation-aware background theming
+- Fixed Gen 5 accent color
+- Fixed grid layout bug on large screens
+- Cleaned up duplicate variables and unused imports
+- Added backend caching for Pokémon data and Pokémon list

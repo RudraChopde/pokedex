@@ -116,15 +116,23 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete, onSearch,
           )}
 
           {mode === "error" && (
-            <div className="flex flex-col items-center gap-4">
-              <p className="text-red-400 text-lg font-semibold">
-                "{searchQuery}" not found
-              </p>
-              <p className="text-gray-500 text-sm">
-                Check the spelling and try again
-              </p>
-            </div>
-          )}
+    <div className="flex flex-col items-center gap-6">
+        <img
+            src="/MissingNo.gif"
+            alt="MissingNo"
+            className="w-80 h-80 object-contain pixelated"
+            //style={{ imageRendering: "pixelated" }}
+        />
+        <div className="flex flex-col items-center gap-2">
+            <p className="text-red-400 text-lg font-semibold tracking-wide">
+                Uh oh! Looks like <span className="text-white">"{searchQuery}"</span> summoned MissingNo.
+            </p>
+            <p className="text-gray-500 text-sm">
+                Double-check the name and try again
+            </p>
+        </div>
+    </div>
+)}
 
         </div>
         ) : (
@@ -287,10 +295,17 @@ function ContentWrapper({ mode, searchQuery, onBack, onSearchComplete, onSearch,
           </div>
 
           <div className="px-14 pb-10">
-            {pokemonData?.evolutions && (
+             <h2 className="text-3xl font-bold text-white mb-10 tracking-wide text-center">
+              Evolution Chain
+              </h2>
+            {pokemonData?.evolutions.children?.length > 0 ? (
               <Evolution evolutions={pokemonData.evolutions} isShiny={isShiny}
-              onSearch={onSearch} />
-            )}
+              onSearch={onSearch} />) :  
+               (
+                <p className="text-gray-500 text-sm text-center mt-6 tracking-wide">
+                {pokemonData?.name} does not evolve.
+                </p>
+              )}
 
           </div>
 
